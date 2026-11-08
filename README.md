@@ -4,8 +4,8 @@ A pixel-art sidebar for the [Herdr](https://herdr.dev) desktop app. Your spaces 
 agents sit under one header per machine, in a DOS-style pixel font. Each agent gets a
 square card with a small pixel scene and an animal of its own: a duck, a frog, a cat or
 a penguin. The badge on the card tells you what the agent is doing, and the animal bobs
-while it works. Every color comes from the Herdr theme you pick, so it fits light and
-dark themes alike.
+while it works. The sidebar takes its colors from the Herdr theme you pick, so it
+fits light and dark themes alike. Only the animals keep their own colors.
 
 ![Pixelherd in a Herdr window, with a custom Omarchy theme, Piedmont Gold](screenshot.png)
 
@@ -15,8 +15,11 @@ Pixelherd is one layout (`layouts/pixelherd.json`) and two mods
 (`mods/pixelherd-spaces`, `mods/pixelherd-agents`). Herdr asks you to know what a mod
 does outside its own folder before you add it. These two:
 
-- run `git status` and `git rev-parse` in each space's folder, and watch each local
-  space's repo, to show its branch and the commits ahead and behind;
+- run `git status` and `git rev-parse` in each space's folder (the folder its first
+  terminal is in, else the folder the space was made in), on the machine the space
+  lives on, to show its branch and the commits ahead and behind. For a space on
+  another machine, these run there, over Herdr's connection to it;
+- watch each local space's repo for commits and checkouts;
 - run `hc machine ls` every 15 seconds, to show which machines you can reach;
 - run `hc machine rm` and then `hc machine add` only when you click Connect on a
   machine that was rebuilt. Those commands connect to that machine.
@@ -40,7 +43,8 @@ Read ~/.config/herdr-app/AGENTS.md, then add this layout: github.com/jzetterman/
 
 Herdr's own guide tells the agent how: read every file, tell you what the mods run,
 copy them in without overwriting anything of yours, check each mod, and switch to the
-layout.
+layout. If you run Herdr with `HERDR_APP_HOME` set, put that folder in place of
+`~/.config/herdr-app`.
 
 ### By hand (macOS and Linux)
 
@@ -63,15 +67,15 @@ done
 If it prints a line, stop and use the agent line above instead. Herdr's guide has the
 agent rename the new files so nothing of yours is overwritten.
 
-Copy the files, check the mods, and switch:
+Copy the files, check the mods, and switch. The switch runs only if both checks pass:
 
 ```sh
 mkdir -p "$HH/layouts" "$HH/mods"
 cp layouts/pixelherd.json "$HH/layouts/"
 cp -R mods/pixelherd-spaces mods/pixelherd-agents "$HH/mods/"
-herdr-app check "$HH/mods/pixelherd-spaces"
-herdr-app check "$HH/mods/pixelherd-agents"
-herdr-app do layout.switch --name pixelherd
+herdr-app check "$HH/mods/pixelherd-spaces" &&
+  herdr-app check "$HH/mods/pixelherd-agents" &&
+  herdr-app do layout.switch --name pixelherd
 ```
 
 Herdr loads layouts and mods live, so there is nothing to restart. Leave out
@@ -81,17 +85,23 @@ Herdr loads layouts and mods live, so there is nothing to restart. Leave out
 
 `ctrl-shift-l` cycles through your layouts. Your own layout stays as it was.
 
-To remove Pixelherd, switch to another layout first, then delete its files:
+To remove Pixelherd, switch to another layout first. If you installed it by hand with
+the steps above, delete its files:
 
 ```sh
 HH="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 rm -r "$HH/layouts/pixelherd.json" "$HH/mods/pixelherd-spaces" "$HH/mods/pixelherd-agents"
 ```
 
+If an agent installed it, ask the agent to remove it. When a name was taken, the agent
+gave Pixelherd's files new names, and the command above would delete your own files
+instead.
+
 ## Themes
 
-Pixelherd names no colors of its own. It reads the theme you pick in Herdr and works
+The sidebar names no colors of its own. It reads the theme you pick in Herdr and works
 out each machine's color from it, so a theme change recolors the sidebar at once. The
+animals are the exception: they keep their own colors in every theme. The
 screenshot uses Piedmont Gold, a custom Omarchy theme, through Herdr's `omarchy`
 theme, which follows whatever Omarchy theme you set. RECIPE.md has the details, under "Watch out".
 
@@ -99,7 +109,7 @@ theme, which follows whatever Omarchy theme you set. RECIPE.md has the details, 
 
 - [RECIPE.md](RECIPE.md) describes the whole layout: every region, size, color and
   click. Herdr's gallery format uses it as the brief to rebuild the layout from scratch.
-- `tools/` holds the checks for anyone changing the code: `node --test tools/` and
+- [tools/](tools/) holds the checks for anyone changing the code: `node --test tools/` and
   the color and speed checks. RECIPE.md, under "Done when", says what each one needs.
 
 ## License
